@@ -161,7 +161,8 @@ namespace WebClient.Pages
                 {
                     iconColor = result.Payload.Avatar,
                     label = result.Payload.FirstName,
-                    referenceId = result.Payload.Id
+                    referenceId = result.Payload.Id,
+                    canHandleDrag=true
                 });
 
 
@@ -207,6 +208,7 @@ namespace WebClient.Pages
                 text = response.Payload.Subject
 
             });
+            NewTaskSubject = null;
             tasksToShow = allTasks.ToArray();
             StateHasChanged();
         }
