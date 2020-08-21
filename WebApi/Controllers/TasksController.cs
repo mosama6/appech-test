@@ -43,9 +43,9 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpPut("{id}/CompleteTask")]
+        [HttpPut("CompleteTask")]
         [ProducesResponseType(typeof(UpdateTaskCommandResult), StatusCodes.Status200OK)]
-        public async Task<IActionResult> CompleteTask(Guid id, UpdateTaskCommand command)
+        public async Task<IActionResult> CompleteTask(UpdateTaskCommand command)
         {
             if (!ModelState.IsValid)
             {
@@ -54,7 +54,6 @@ namespace WebApi.Controllers
 
             try
             {
-                command.Id = id;
                 var result = await _taskService.CompleteTaskCommandHandler(command);
 
                 return Ok(result);
@@ -65,9 +64,9 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpPut("{id}/AssignTask")]
+        [HttpPut("AssignTask")]
         [ProducesResponseType(typeof(UpdateTaskCommandResult), StatusCodes.Status200OK)]
-        public async Task<IActionResult> AssignTask(Guid id, UpdateTaskCommand command)
+        public async Task<IActionResult> AssignTask(UpdateTaskCommand command)
         {
             if (!ModelState.IsValid)
             {
@@ -76,7 +75,6 @@ namespace WebApi.Controllers
 
             try
             {
-                command.Id = id;
                 var result = await _taskService.AssignTaskCommandHandler(command);
 
                 return Ok(result);

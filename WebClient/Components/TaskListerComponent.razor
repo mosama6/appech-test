@@ -36,12 +36,25 @@
             height: 16px;
         }
     }
+   
+
+    .draggable:active {
+        cursor: grabbing;
+    }
+
+    .dragging {
+        cursor: grabbing;
+    }
 </style>
 
 <div class="task-wrapper">
     @foreach (var item in Tasks)
     {
-        <div class="task-item p-3 my-3 row m-0">
+        @if(item.member == null)
+        {
+
+        }
+        <div class="draggable task-item p-3 my-3 row m-0" draggable="true" @ondragstart="@(()=> HandleDrag(item))">
             <div class="col-10 p-0">
                 <Check TValue="bool" Checked="@item.isDone" CheckedChanged="@(val => item.isDone = val)">
                     <span class="@(item.isDone ? "done-text" : "")">@item.text</span>
@@ -50,7 +63,7 @@
             <div class="col-2 p-0 d-flex justify-content-end align-items-center">
                 @if (item.member != null) {
                     <div class="avtar mr-1" style="background-color: @item.member.avtar;"></div>
-                }
+                 }
                 <img class="delete-icon" src="/assets/images/delete-icon.svg"/>
             </div>
         </div>
@@ -58,5 +71,10 @@
 </div>
 
 @code  {
+    [Parameter] public EventCallback<TaskModel> OnDragStartCallback { get; set; }
     [Parameter] public TaskModel[] Tasks { get; set; }
+
+    void HandleDrag(TaskModel task) => OnDragStartCallback.InvokeAsync(task);
+   
+
 }
