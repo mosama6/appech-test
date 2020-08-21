@@ -17,12 +17,14 @@ namespace Services
     public class TaskService : ITaskService
     {
         private readonly ITaskRepository _taskRepository;
+        private readonly IMemberRepository _memberRepository;
         private readonly IMapper _mapper;
 
-        public TaskService(IMapper mapper, ITaskRepository taskRepository)
+        public TaskService(IMapper mapper, ITaskRepository taskRepository, IMemberRepository memberRepository)
         {
             _mapper = mapper;
             _taskRepository = taskRepository;
+            _memberRepository = memberRepository;
         }
 
         public async Task<CreateTaskCommandResult> CreateTaskCommandHandler(CreateTaskCommand command)
@@ -63,6 +65,15 @@ namespace Services
 
             _mapper.Map<UpdateTaskCommand, CustomTask>(command, task);
 
+            var member = await _memberRepository.ByIdAsync(command.AssignedMemberId);
+
+            if (member == null)
+                return new UpdateTaskCommandResult()
+                {
+                    Succeed = false
+                };
+
+            task.AssignedMember = member;
             var affectedRecordsCount = await _taskRepository.UpdateRecordAsync(task);
 
             if (affectedRecordsCount < 1)

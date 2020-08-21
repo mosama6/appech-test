@@ -27,11 +27,14 @@ namespace DataLayer
             modelBuilder.Entity<Task>(entity => {
                 entity.HasKey(k => k.Id);
                 entity.ToTable("Task");
+
+                entity.Property(k => k.AssignedMemberId).IsRequired(false);
+                entity.HasOne(p => p.AssignedMember)
+           .WithMany(b => b.Tasks);
+              
             });
 
-            modelBuilder.Entity<Task>()
-           .HasOne(p => p.AssignedMember)
-           .WithMany(b => b.Tasks);
+         
         }
     }
 }
