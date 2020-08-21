@@ -1,20 +1,23 @@
+@page "/"
 @page "/manage-tasks"
 @inject HttpClient Http
 @using FamilyTask.Components
 @using FamilyTask.Shared.Components
 @inherits ManageTasksBase
 
-@if(isLoaded) {
+@if (isLoaded)
+{
     <div class="page-wrapper row m-0 col-12 p-0">
         <div class="col-4 p-0">
             <LeftMenu MenuItems="@leftMenuItem.ToArray()" OnAddItem="@onAddItem" OnDropCallback="@onDrop" />
         </div>
         <div class="col-8 p-0">
-            @if (showLister) {
+            @if (showLister)
+            {
                 <div class="col-10 offset-1 pt-5">
                     <div class="row m-0">
                         <Field class="col-9 p-0 custom-input">
-                            <TextEdit Placeholder="Enter New Task"  @bind-Text="@NewTaskSubject"/>
+                            <TextEdit Placeholder="Enter New Task" @bind-Text="@NewTaskSubject" />
                         </Field>
                         <div class="col-3 p-0 text-right">
                             <Button class="add-btn px-4" @onclick="@onAddTask">Add</Button>
@@ -23,10 +26,11 @@
                 </div>
                 <div class="col-10 offset-1">
                     <TaskListerComponent Tasks="@tasksToShow" OnTaskCompletionStateChangeCallback="@onTaskCompletionStateChangeCallback"
-                                         OnDragStartCallback="@onDragStart"/>
+                                         OnDragStartCallback="@onDragStart" />
                 </div>
             }
-            @if(showCreator) {
+            @if (showCreator)
+            {
                 <div class="col-10 offset-1 pt-5">
                     <FamilyMemberCreator onAddCallback="@onMemberAdd" />
                 </div>
