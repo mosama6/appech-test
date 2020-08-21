@@ -31,9 +31,16 @@ namespace WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var result = await _taskService.CreateTaskCommandHandler(command);
+            try
+            {
+                var result = await _taskService.CreateTaskCommandHandler(command);
 
-            return Created($"/api/tasks/{result.Payload.Id}", result);
+                return Created($"/api/tasks/{result.Payload.Id}", result);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut("{id}/CompleteTask")]
