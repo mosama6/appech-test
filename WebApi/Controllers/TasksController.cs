@@ -54,6 +54,7 @@ namespace WebApi.Controllers
 
             try
             {
+                command.Id = id;
                 var result = await _taskService.CompleteTaskCommandHandler(command);
 
                 return Ok(result);
@@ -75,6 +76,7 @@ namespace WebApi.Controllers
 
             try
             {
+                command.Id = id;
                 var result = await _taskService.AssignTaskCommandHandler(command);
 
                 return Ok(result);
