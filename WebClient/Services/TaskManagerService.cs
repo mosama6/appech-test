@@ -31,7 +31,11 @@ namespace WebClient.Services
         {
             return await _httpClient.PutJsonAsync<UpdateTaskCommandResult>($"tasks/AssignTask", task);
         }
+        public async Task<UpdateTaskCommandResult> CompleteTask(UpdateTaskCommand task)
+        {
+            return await _httpClient.PutJsonAsync<UpdateTaskCommandResult>($"tasks/CompleteTask", task);
+        }
 
-       
+
     }
 }

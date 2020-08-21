@@ -9,6 +9,7 @@ namespace WebClient.Pages
 {
     public class ManageTasksBase: ComponentBase
     {
+        #region Members
         protected string NewTaskSubject { get; set; }
         protected List<FamilyMember> members = new List<FamilyMember>();
         protected List<TaskModel> allTasks = new List<TaskModel>();
@@ -18,12 +19,17 @@ namespace WebClient.Pages
         protected bool isLoaded;
         protected bool showLister;
         protected bool showCreator;
+        #endregion
 
+        #region Services
         [Inject]
         public ITaskManagerService TaskManagerService { get; set; }
 
         [Inject]
         public IMemberDataService MemberDataService { get; set; }
+        #endregion
+
+        #region Init
         protected override async Task OnInitializedAsync()
         {
             var membersResponse = await MemberDataService.GetAllMembers();
@@ -42,7 +48,7 @@ namespace WebClient.Pages
                     });
                 }
             }
-            
+
             var tasksResponse = await TaskManagerService.GetAllTasks();
             if (tasksResponse != null && tasksResponse.Payload != null && tasksResponse.Payload.Any())
             {
@@ -52,21 +58,21 @@ namespace WebClient.Pages
                     {
                         id = task.Id,
                         isDone = task.IsComplete,
-                        member = members.FirstOrDefault(member=> member.id == task.AssignedMemberId),
+                        member = members.FirstOrDefault(member => member.id == task.AssignedMemberId),
                         text = task.Subject
 
                     });
                 }
             }
 
-            leftMenuItem.Add( new MenuItem
+            leftMenuItem.Add(new MenuItem
             {
                 label = "All Tasks",
                 referenceId = Guid.Empty,
                 isActive = true,
                 canHandleDrag = false,
 
-                
+
             });
             leftMenuItem[0].ClickCallback += showAllTasks;
             for (int i = 1; i < members.Count + 1; i++)
@@ -84,56 +90,9 @@ namespace WebClient.Pages
             showAllTasks(null, leftMenuItem[0]);
             isLoaded = true;
         }
-        protected void onAddItem()
-        {
-            showLister = false;
-            showCreator = true;
-            makeMenuItemActive(null);
-            StateHasChanged();
-        }
-
-        protected void onItemClick(object sender, object e)
-        {
-            Guid val = (Guid)e.GetType().GetProperty("referenceId").GetValue(e);
-            makeMenuItemActive(e);
-            if (allTasks != null && allTasks.Count > 0)
-            {
-                tasksToShow = allTasks.Where(item => {
-                    if (item.member != null)
-                    {
-                        return item.member.id == val;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }).ToArray();
-            }
-            showLister = true;
-            showCreator = false;
-            StateHasChanged();
-        }
-        protected void showAllTasks(object sender, object e)
-        {
-            tasksToShow =  allTasks.ToArray();
-            showLister = true;
-            showCreator = false;
-            makeMenuItemActive(e);
-            StateHasChanged();
-        }
-
-        protected void makeMenuItemActive(object e)
-        {
-            foreach (var item in leftMenuItem)
-            {
-                item.isActive = false;
-            }
-            if (e != null)
-            {
-                e.GetType().GetProperty("isActive").SetValue(e, true);
-            }
-        }
-
+        #endregion
+        
+        #region Event Listners
         protected async void onMemberAdd(FamilyMember familyMember)
         {
             var result = await MemberDataService.Create(new Domain.Commands.CreateMemberCommand()
@@ -162,7 +121,7 @@ namespace WebClient.Pages
                     iconColor = result.Payload.Avatar,
                     label = result.Payload.FirstName,
                     referenceId = result.Payload.Id,
-                    canHandleDrag=true
+                    canHandleDrag = true
                 });
 
 
@@ -172,29 +131,24 @@ namespace WebClient.Pages
                 StateHasChanged();
             }
         }
-        protected void onDragStart(TaskModel task) => taskToAssign = task;
+        protected async void onTaskCompletionStateChangeCallback(TaskModel task)
+        {
+            var response = await TaskManagerService.CompleteTask(new Domain.Commands.UpdateTaskCommand()
+            {
+                AssignedMemberId = task.member.id,
+                Id = task.id,
+                IsComplete = task.isDone,
+                Subject = task.text
 
+            });
+            StateHasChanged();
+        }
+        protected void onDragStart(TaskModel task) => taskToAssign = task;
         protected async void onDrop(Guid memberId)
         {
             await assignTask(taskToAssign, memberId);
         }
-        protected async Task assignTask(TaskModel task, Guid familyMemberId)
-        {
-            var response = await TaskManagerService.AssignTask(new Domain.Commands.UpdateTaskCommand()
-            {
-                AssignedMemberId = familyMemberId,
-                Id = task.id,
-                IsComplete = task.isDone,
-                Subject = task.text
-            
-            });
-            if (response.Succeed)
-                allTasks.FirstOrDefault(t => t.id == task.id).member = members.FirstOrDefault(member => member.id == familyMemberId);
-        
-            StateHasChanged();
-            
-        }
-        protected async void AddTask()
+        protected async void onAddTask()
         {
             var response = await TaskManagerService.Create(new Domain.Commands.CreateTaskCommand()
             {
@@ -212,5 +166,74 @@ namespace WebClient.Pages
             tasksToShow = allTasks.ToArray();
             StateHasChanged();
         }
+        protected void onItemClick(object sender, object e)
+        {
+            Guid val = (Guid)e.GetType().GetProperty("referenceId").GetValue(e);
+            makeMenuItemActive(e);
+            if (allTasks != null && allTasks.Count > 0)
+            {
+                tasksToShow = allTasks.Where(item => {
+                    if (item.member != null)
+                    {
+                        return item.member.id == val;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }).ToArray();
+            }
+            showLister = true;
+            showCreator = false;
+            StateHasChanged();
+        }
+        protected void onAddItem()
+        {
+            showLister = false;
+            showCreator = true;
+            makeMenuItemActive(null);
+            StateHasChanged();
+        }
+        #endregion
+
+        #region Helper Methods
+        private async Task assignTask(TaskModel task, Guid familyMemberId)
+        {
+            if (task.isDone) return;
+            var response = await TaskManagerService.AssignTask(new Domain.Commands.UpdateTaskCommand()
+            {
+                AssignedMemberId = familyMemberId,
+                Id = task.id,
+                IsComplete = task.isDone,
+                Subject = task.text
+
+            });
+            if (response.Succeed)
+                allTasks.FirstOrDefault(t => t.id == task.id).member = members.FirstOrDefault(member => member.id == familyMemberId);
+
+            StateHasChanged();
+
+        }
+        private void showAllTasks(object sender, object e)
+        {
+            tasksToShow = allTasks.ToArray();
+            showLister = true;
+            showCreator = false;
+            makeMenuItemActive(e);
+            StateHasChanged();
+        }
+        private void makeMenuItemActive(object e)
+        {
+            foreach (var item in leftMenuItem)
+            {
+                item.isActive = false;
+            }
+            if (e != null)
+            {
+                e.GetType().GetProperty("isActive").SetValue(e, true);
+            }
+        }
+        #endregion
+
     }
 }

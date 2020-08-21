@@ -56,7 +56,7 @@
         }
         <div class="draggable task-item p-3 my-3 row m-0" draggable="true" @ondragstart="@(()=> HandleDrag(item))">
             <div class="col-10 p-0">
-                <Check TValue="bool" Checked="@item.isDone" CheckedChanged="@(val => item.isDone = val)">
+                <Check TValue="bool" Checked="@item.isDone" CheckedChanged="@(val => item.isDone = val)" @onchange="(e) => HandleTaskCompletion(item)">
                     <span class="@(item.isDone ? "done-text" : "")">@item.text</span>
                 </Check>
             </div>
@@ -71,10 +71,16 @@
 </div>
 
 @code  {
+    [Parameter] public EventCallback<TaskModel> OnTaskCompletionStateChangeCallback { get; set; }
     [Parameter] public EventCallback<TaskModel> OnDragStartCallback { get; set; }
     [Parameter] public TaskModel[] Tasks { get; set; }
 
     void HandleDrag(TaskModel task) => OnDragStartCallback.InvokeAsync(task);
-   
+    void HandleTaskCompletion(TaskModel task)
+    {
+        task.isDone = !task.isDone;
+        OnTaskCompletionStateChangeCallback.InvokeAsync(task);
+    }
+
 
 }

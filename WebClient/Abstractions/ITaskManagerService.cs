@@ -12,6 +12,7 @@ namespace WebClient.Abstractions
         Task<CreateTaskCommandResult> Create(CreateTaskCommand command);
         Task<GetAllTasksQueryResult> GetAllTasks();
         Task<UpdateTaskCommandResult> AssignTask(UpdateTaskCommand task);
-        
+        Task<UpdateTaskCommandResult> CompleteTask(UpdateTaskCommand task);
+
     }
 }
